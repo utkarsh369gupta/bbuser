@@ -1,40 +1,63 @@
 import React, { useState } from 'react';
 import { Line } from 'react-chartjs-2';
-import 'chart.js/auto'; // Necessary for Chart.js
+import 'chart.js/auto';
 
 const Hero = () => {
-    const [totalAmount, setTotalAmount] = useState(0); // State to store total budget
-    const [transaction, setTransaction] = useState(0); // State to store current transaction
-    const [transactions, setTransactions] = useState([]); // State to store list of transactions
-    const [totalSpent, setTotalSpent] = useState(0); // State to store total spent amount
-    const [showQuote, setShowQuote] = useState(false); // State for motivational quote popup
+    const [totalAmount, setTotalAmount] = useState(0);
+    const [transaction, setTransaction] = useState(0);
+    const [transactions, setTransactions] = useState([]);
+    const [totalSpent, setTotalSpent] = useState(0);
+    const [showQuote, setShowQuote] = useState(false);
+    const [smsSent, setSmsSent] = useState(false); // ✅ To prevent multiple SMS
 
     const handleAddTransaction = () => {
+        const amount = parseFloat(transaction);
+        if (isNaN(amount) || amount <= 0) return;
         const newTotalSpent = totalSpent + parseFloat(transaction);
-        const transactionTime = new Date().toLocaleTimeString(); // Get current time of transaction
+        const transactionTime = new Date().toLocaleTimeString();
 
         setTotalSpent(newTotalSpent);
-        setTransactions([...transactions, { amount: parseFloat(transaction), time: transactionTime }]); // Store transaction with time
-        setTransaction(0); // Reset transaction input after adding
+        setTransactions([...transactions, { amount: parseFloat(transaction), time: transactionTime }]);
+        setTransaction(0);
 
         if (newTotalSpent > totalAmount) {
-            setShowQuote(true); // Show motivational quote if limit exceeds
+            setShowQuote(true);
+
+            // ✅ Trigger SMS only once
+            if (!smsSent) {
+                fetch('http://localhost:5000/send-sms', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('✅ SMS sent successfully!');
+                            setSmsSent(true);
+                        } else {
+                            console.error('❌ SMS failed:', data.error);
+                        }
+                    })
+                    .catch(err => console.error('💥 Error sending SMS:', err));
+            }
         } else {
             setShowQuote(false);
+            setSmsSent(false); // ✅ Reset if user reduces budget use
         }
     };
 
-    // Data for the chart
     const chartData = {
-        labels: transactions.map((t) => t.time), // Time of each transaction
+        labels: transactions.map((t) => t.time),
         datasets: [
             {
                 label: 'Transaction Amount',
-                data: transactions.map((t) => t.amount), // Amount of each transaction
+                data: transactions.map((t) => t.amount),
                 backgroundColor: 'rgba(75, 192, 192, 0.6)',
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 2,
-                fill: false, // To prevent filling under the line
+                fill: false,
             },
         ],
     };
@@ -62,7 +85,7 @@ const Hero = () => {
             <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
                 <h1 className="text-3xl font-bold text-center mb-6 text-indigo-600">Budget Tracker</h1>
 
-                {/* Input for total amount */}
+                {/* Total Budget Input */}
                 <div className="mb-4">
                     <label className="block text-gray-700 font-medium mb-2">Total Amount:</label>
                     <input
@@ -74,7 +97,7 @@ const Hero = () => {
                     />
                 </div>
 
-                {/* Section to add transactions */}
+                {/* Transaction Input */}
                 <div className="mb-4">
                     <label className="block text-gray-700 font-medium mb-2">Transaction:</label>
                     <input
@@ -93,7 +116,7 @@ const Hero = () => {
                     Add Transaction
                 </button>
 
-                {/* Display total spent and transactions */}
+                {/* Transactions List */}
                 <div className="mt-6">
                     <h2 className="text-xl font-semibold text-gray-800 mb-2">Transactions:</h2>
                     <ul className="space-y-2">
@@ -106,7 +129,7 @@ const Hero = () => {
                     <h3 className="mt-4 text-lg font-semibold text-gray-800">Total Spent: ${totalSpent}</h3>
                 </div>
 
-                {/* Check if the total spent exceeds the total amount */}
+                {/* Budget Limit Exceeded Warning */}
                 {totalSpent > totalAmount && (
                     <div className="mt-4 text-red-600 font-semibold">
                         <h3>Your limit exceeds!</h3>
@@ -114,7 +137,7 @@ const Hero = () => {
                 )}
             </div>
 
-            {/* Chart for transactions over time */}
+            {/* Chart Section */}
             <div className="mt-8 w-full max-w-xl bg-white p-8 rounded-lg shadow-lg">
                 <h2 className="text-2xl font-bold text-indigo-600 mb-6 text-center">Transaction History</h2>
                 <Line data={chartData} options={chartOptions} />

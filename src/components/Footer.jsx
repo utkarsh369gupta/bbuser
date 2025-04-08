@@ -24,9 +24,8 @@ const Footer = () => {
                 <div className='flex flex-col items-center mt-9'>
                     <h2 className="text-xl font-bold text-white pb-5">Team Members Name:</h2>
                     <p className="text-xl font-serif text-white">Utkarsh Gupta: 22BIT0267</p>
-                    <p className="text-xl font-serif text-white">Shreyas Shetty: 22BIT0348</p>
-                    <p className="text-xl font-serif text-white">Rakesh Prajapati: 22BIT0349</p>
-                    <p className="text-xl font-serif text-white">Arghya Ghosh: 22BIT0631</p>
+                    <p className="text-xl font-serif text-white">Ankush Ukil: 22BIT0179</p>
+                    <p className="text-xl font-serif text-white">Ashis David John: 22BIT0188</p>
                 </div>
                 <div className='flex flex-col mt-9 text-slate-200'>Copyright © 2024 BudgetBuddy</div>
             </div>
