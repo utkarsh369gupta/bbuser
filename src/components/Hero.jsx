@@ -41,6 +41,7 @@ const Hero = () => {
                         }
                     })
                     .catch(err => console.error('💥 Error sending SMS:', err));
+                setSmsSent(false);
             }
         } else {
             setShowQuote(false);
